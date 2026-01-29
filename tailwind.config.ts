@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -70,6 +74,7 @@ export default {
           "2": "hsl(var(--chart-2))",
           "3": "hsl(var(--chart-3))",
           "4": "hsl(var(--chart-4))",
+          "5": "hsl(var(--chart-5))",
         },
       },
       borderRadius: {
