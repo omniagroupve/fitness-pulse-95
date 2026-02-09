@@ -1,12 +1,12 @@
 import { 
   DollarSign, 
-  Clock, 
   Users, 
   AlertTriangle,
   TrendingUp,
   Activity,
   ShoppingCart,
-  MessageSquare
+  MessageSquare,
+  Zap
 } from 'lucide-react';
 import { CommandCard, CommandCardHeader, CommandCardContent } from '../CommandCard';
 import { MetricCard } from '../MetricCard';
@@ -32,18 +32,21 @@ export function OverviewView() {
   ];
 
   const totalVentas = ventasPorSede.reduce((sum, s) => sum + s.ventas, 0);
-  const ventasTarget = 5500; // Target diario
+  const ventasTarget = 5500;
   const ventasProgress = (totalVentas / ventasTarget) * 100;
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Executive Snapshot - Top Row */}
+      {/* Executive Snapshot */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <Activity className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+          <div className="h-5 w-5 rounded-md bg-primary/10 flex items-center justify-center border border-primary/20">
+            <Zap className="h-3 w-3 text-primary" />
+          </div>
+          <h2 className="text-xs font-bold text-foreground uppercase tracking-[0.15em]">
             Executive Snapshot
           </h2>
+          <div className="flex-1 h-px bg-gradient-to-r from-border/50 to-transparent ml-3" />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -55,21 +58,18 @@ export function OverviewView() {
             status={estadoGeneral.variacionVentas > 0 ? 'success' : 'destructive'}
             icon={<DollarSign className="h-4 w-4 text-success" />}
           />
-          
           <MetricCard
             label="Costo Nómina"
             value={`$${estadoGeneral.costoNomina.toLocaleString()}`}
             status="neutral"
             icon={<Users className="h-4 w-4 text-muted-foreground" />}
           />
-          
           <MetricCard
             label="SLA Atención"
             value={`${atencionCliente.respuestasMenos5Min}%`}
             status={atencionCliente.respuestasMenos5Min >= 85 ? 'success' : 'warning'}
             icon={<MessageSquare className="h-4 w-4 text-primary" />}
           />
-          
           <MetricCard
             label="Alertas Activas"
             value={`${allAlerts.length}`}
@@ -81,10 +81,10 @@ export function OverviewView() {
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Charts & Sedes */}
+        {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Business Pulse */}
-          <CommandCard>
+          <CommandCard scanline>
             <CommandCardHeader 
               title="Business Pulse"
               subtitle="Tendencia de ventas últimos 7 días"
@@ -98,19 +98,22 @@ export function OverviewView() {
           {/* Sedes Grid */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Activity className="h-4 w-4 text-secondary" />
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+              <div className="h-5 w-5 rounded-md bg-secondary/10 flex items-center justify-center border border-secondary/20">
+                <Activity className="h-3 w-3 text-secondary" />
+              </div>
+              <h2 className="text-xs font-bold text-foreground uppercase tracking-[0.15em]">
                 Performance por Sede
               </h2>
+              <div className="flex-1 h-px bg-gradient-to-r from-border/50 to-transparent ml-3" />
             </div>
             <SedeGrid sedes={ventasPorSede} />
           </div>
         </div>
 
-        {/* Right Column - Status & Alerts */}
+        {/* Right Column */}
         <div className="space-y-6">
           {/* Operations Intelligence */}
-          <CommandCard>
+          <CommandCard hudCorners>
             <CommandCardHeader 
               title="Operations Intelligence"
               subtitle="Señales que requieren atención"
@@ -118,7 +121,7 @@ export function OverviewView() {
             />
             <CommandCardContent className="space-y-4">
               {/* Status Rings */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 <StatusRing 
                   value={ventasProgress} 
                   max={100}
@@ -146,26 +149,26 @@ export function OverviewView() {
               </div>
 
               {/* Quick Stats */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="p-3 rounded-lg bg-muted/30 border border-border/30">
-                  <div className="flex items-center gap-2 mb-1">
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="p-3 rounded-lg bg-muted/20 border border-border/30 hover:border-warning/30 transition-colors">
+                  <div className="flex items-center gap-1.5 mb-1">
                     <Users className="h-3 w-3 text-warning" />
-                    <span className="text-[10px] text-muted-foreground uppercase">Pendientes</span>
+                    <span className="text-[9px] text-muted-foreground/60 uppercase font-bold tracking-wider">Pendientes</span>
                   </div>
-                  <p className="text-lg font-bold text-foreground">
+                  <p className="text-lg font-bold text-foreground tabular-nums">
                     {asistenciaNomina.coachesValidacionPendiente.length}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">Coaches sin validar</p>
+                  <p className="text-[10px] text-muted-foreground/50">Coaches sin validar</p>
                 </div>
-                <div className="p-3 rounded-lg bg-muted/30 border border-border/30">
-                  <div className="flex items-center gap-2 mb-1">
+                <div className="p-3 rounded-lg bg-muted/20 border border-border/30 hover:border-warning/30 transition-colors">
+                  <div className="flex items-center gap-1.5 mb-1">
                     <ShoppingCart className="h-3 w-3 text-warning" />
-                    <span className="text-[10px] text-muted-foreground uppercase">Compras</span>
+                    <span className="text-[9px] text-muted-foreground/60 uppercase font-bold tracking-wider">Compras</span>
                   </div>
-                  <p className="text-lg font-bold text-foreground">
+                  <p className="text-lg font-bold text-foreground tabular-nums">
                     {comprasInventario.comprasPendientes}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">Por aprobar</p>
+                  <p className="text-[10px] text-muted-foreground/50">Por aprobar</p>
                 </div>
               </div>
             </CommandCardContent>
@@ -185,7 +188,7 @@ export function OverviewView() {
         </div>
       </div>
 
-      {/* Ask OMNIA - AI Panel */}
+      {/* Ask OMNIA */}
       <section>
         <AskOmnia />
       </section>

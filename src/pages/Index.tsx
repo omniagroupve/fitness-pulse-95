@@ -18,13 +18,17 @@ const Index = () => {
       case 'compras':
         return <OperacionesView />;
       case 'alertas': return <AlertasView />;
-      case 'atencion': return <OverviewView />; // Placeholder
+      case 'atencion': return <OverviewView />;
       default: return <OverviewView />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex pattern-grid noise-overlay">
+    <div className="min-h-screen bg-background flex noise-overlay">
+      {/* Background patterns */}
+      <div className="fixed inset-0 pattern-dots pointer-events-none opacity-50" />
+      <div className="fixed inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-secondary/[0.02] pointer-events-none" />
+      
       {/* Sidebar */}
       <CommandSidebar 
         activeView={activeView} 
@@ -32,7 +36,7 @@ const Index = () => {
       />
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-screen overflow-hidden relative">
         <CommandHeader />
         
         <main className="flex-1 overflow-y-auto p-6">

@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle } from 'lucide-react';
+import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, Zap } from 'lucide-react';
 
 interface SedeData {
   sede: string;
@@ -22,25 +22,25 @@ export function SedeGrid({ sedes, className }: SedeGridProps) {
 
   const statusConfig = {
     ok: {
-      bg: 'bg-success/5 hover:bg-success/10',
-      border: 'border-success/20 hover:border-success/40',
-      icon: CheckCircle,
+      border: 'border-success/20 hover:border-success/50',
+      glow: 'hover:shadow-[0_0_25px_hsl(142,71%,45%,0.12)]',
+      indicator: 'bg-success',
       iconColor: 'text-success',
-      glow: 'hover:shadow-[0_0_20px_hsl(142,71%,45%,0.15)]'
+      topLine: 'via-success/40',
     },
     warning: {
-      bg: 'bg-warning/5 hover:bg-warning/10',
-      border: 'border-warning/20 hover:border-warning/40',
-      icon: AlertTriangle,
+      border: 'border-warning/20 hover:border-warning/50',
+      glow: 'hover:shadow-[0_0_25px_hsl(38,92%,50%,0.12)]',
+      indicator: 'bg-warning',
       iconColor: 'text-warning',
-      glow: 'hover:shadow-[0_0_20px_hsl(38,92%,50%,0.15)]'
+      topLine: 'via-warning/40',
     },
     critical: {
-      bg: 'bg-destructive/5 hover:bg-destructive/10',
-      border: 'border-destructive/20 hover:border-destructive/40',
-      icon: AlertTriangle,
+      border: 'border-destructive/20 hover:border-destructive/50',
+      glow: 'hover:shadow-[0_0_25px_hsl(0,72%,51%,0.12)]',
+      indicator: 'bg-destructive',
       iconColor: 'text-destructive',
-      glow: 'hover:shadow-[0_0_20px_hsl(0,72%,51%,0.15)]'
+      topLine: 'via-destructive/40',
     }
   };
 
@@ -49,7 +49,6 @@ export function SedeGrid({ sedes, className }: SedeGridProps) {
       {sedes.map((sede, index) => {
         const status = sede.status || getStatus(sede.variacion);
         const config = statusConfig[status];
-        const StatusIcon = config.icon;
         const isPositive = sede.variacion > 0;
         const isNegative = sede.variacion < 0;
 
@@ -57,9 +56,9 @@ export function SedeGrid({ sedes, className }: SedeGridProps) {
           <div
             key={sede.sede}
             className={cn(
-              "relative rounded-xl border p-4",
-              "transition-all duration-300",
-              config.bg,
+              "relative rounded-xl border p-4 overflow-hidden",
+              "bg-card/40 backdrop-blur-sm",
+              "transition-all duration-300 hover:-translate-y-0.5",
               config.border,
               config.glow,
               "animate-scale-in",
@@ -67,27 +66,29 @@ export function SedeGrid({ sedes, className }: SedeGridProps) {
             )}
             style={{ opacity: 0 }}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
+            {/* Top accent */}
+            <div className={cn(
+              "absolute top-0 left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent to-transparent",
+              config.topLine
+            )} />
+
+            {/* Status indicator */}
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-muted/50 flex items-center justify-center">
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                </div>
-                <span className="text-xs font-semibold text-foreground">{sede.sede}</span>
+                <div className={cn("h-1.5 w-1.5 rounded-full", config.indicator)} />
+                <span className="text-xs font-bold text-foreground tracking-tight">{sede.sede}</span>
               </div>
-              <StatusIcon className={cn("h-4 w-4", config.iconColor)} />
+              <MapPin className="h-3 w-3 text-muted-foreground/40" />
             </div>
 
             {/* Value */}
-            <div className="mb-2">
-              <p className="text-2xl font-bold text-foreground tracking-tight">
-                ${sede.ventas.toLocaleString()}
-              </p>
-            </div>
+            <p className="text-2xl font-bold text-foreground tracking-tight tabular-nums mb-2">
+              ${sede.ventas.toLocaleString()}
+            </p>
 
             {/* Change */}
             <div className={cn(
-              "flex items-center gap-1 text-xs font-medium",
+              "flex items-center gap-1 text-xs font-semibold",
               isPositive && "text-success",
               isNegative && "text-destructive",
               !isPositive && !isNegative && "text-muted-foreground"
@@ -95,7 +96,8 @@ export function SedeGrid({ sedes, className }: SedeGridProps) {
               {isPositive && <TrendingUp className="h-3 w-3" />}
               {isNegative && <TrendingDown className="h-3 w-3" />}
               {!isPositive && !isNegative && <Minus className="h-3 w-3" />}
-              <span>{isPositive && '+'}{sede.variacion}% vs ayer</span>
+              <span>{isPositive && '+'}{sede.variacion}%</span>
+              <span className="text-muted-foreground/50 font-normal ml-0.5">vs ayer</span>
             </div>
           </div>
         );
