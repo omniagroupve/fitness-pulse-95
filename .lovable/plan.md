@@ -1,96 +1,101 @@
 
-# Ask OMNIA - De Mock a AI Real con Lovable Cloud
+# Revision Completa del Command Center: User-Friendly y Funcional
 
-## Objetivo
+## Problemas Encontrados
 
-Convertir el panel "Ask OMNIA" de respuestas simuladas a un asistente AI real que conoce los datos del negocio de Fitness Factory, usando streaming token-by-token.
+### 1. Textos tecnicos que hay que cambiar a lenguaje simple
+- **Overview**: "Executive Snapshot" -> "Resumen del Dia", "Performance por Sede" -> "Como van las Sedes", "Operations Intelligence" -> "Que necesita tu atencion", "SLA Atencion" -> "Tiempo de Respuesta", "Business Pulse" -> "Tendencia de Ventas"
+- **Sidebar**: "Command v2.0" -> "Centro de Control", grupo "Sistema" -> "Notificaciones"
+- **Header**: "Command Center" -> "Centro de Control"
+- **Ventas**: "Analisis detallado de ingresos por sede" -> "Como van las ventas en cada sede"
+- **Operaciones**: "Distribucion semanal de horas operativas" -> "Horas trabajadas esta semana", "Validaciones Pendientes" -> "Coaches por Revisar"
+- **Alertas**: "Centro de Alertas" / "senales detectadas por el sistema" -> "Alertas" / "cosas que necesitan atencion", "Timeline de Alertas" -> "Detalle de Alertas"
+- **AskOmnia**: "AI Assistant" -> "Tu Asistente"
 
----
+### 2. Vista de "Atencion" no tiene contenido propio
+- Actualmente muestra el OverviewView (copia), necesita su propia vista con metricas de atencion al cliente:
+  - Mensajes de hoy (47), Tiempo promedio de respuesta (3.2 min), Respuestas rapidas (89%)
+  - Grafico de categorias de mensajes (Membresias, Horarios, Pagos, Clases, Otros)
+  - Los datos ya existen en mockData (`atencionCliente`)
 
-## Arquitectura
+### 3. Navegacion sidebar duplicada
+- "Nomina" y "Compras" en el sidebar redirigen a OperacionesView (duplicado de Operaciones)
+- Solucion: Hacer que "Nomina" abra Operaciones en sub-tab Nomina, y "Compras" abra Operaciones en sub-tab Compras, para que la navegacion sea directa
 
-```text
-+------------------+       +------------------------+       +---------------------------+
-|   AskOmnia.tsx   | ----> | Edge Function: omnia   | ----> | Lovable AI Gateway        |
-|   (streaming)    | <---- | (system prompt + data) | <---- | google/gemini-3-flash     |
-+------------------+       +------------------------+       +---------------------------+
-```
-
-El system prompt del edge function incluira todos los datos de mockData como contexto, de modo que OMNIA "conoce" el estado actual del negocio y puede responder preguntas reales sobre ventas, alertas, sedes, nomina, etc.
-
----
-
-## Que se va a hacer
-
-### 1. Habilitar Lovable Cloud
-- Activar Lovable Cloud para tener Supabase disponible (edge functions).
-
-### 2. Crear Edge Function `omnia`
-- Archivo: `supabase/functions/omnia/index.ts`
-- Recibe los mensajes del chat
-- Inyecta un **system prompt ejecutivo** con los datos del negocio (ventas por sede, alertas, nomina, compras, inventario)
-- Llama al Lovable AI Gateway con streaming habilitado
-- Maneja errores 429 (rate limit) y 402 (creditos)
-- Retorna el stream SSE al frontend
-
-### 3. Refactorizar AskOmnia.tsx
-- Eliminar `MOCK_RESPONSES` y el `setTimeout`
-- Implementar streaming real token-by-token
-- Renderizar respuestas con markdown (`react-markdown`)
-- Actualizar el ultimo mensaje del assistant progresivamente
-- Manejar errores y mostrar toasts
-- Mantener el historial de conversacion completo
-
-### 4. Crear utilidad de streaming
-- Archivo: `src/lib/streamChat.ts`
-- Funcion reutilizable para parsear SSE line-by-line
-- Manejo de buffer, CRLF, `[DONE]`, flush final
-- Callbacks `onDelta` y `onDone`
+### 4. Light mode necesita ajustes
+- El toggle funciona pero algunos elementos de glassmorphism y glows son demasiado sutiles en modo claro
+- Las tarjetas con `bg-card/40` y `bg-card/60` necesitan mas opacidad en light mode para que se distingan del fondo
+- Los patrones de fondo (dots, grid) deben ajustarse para light mode
 
 ---
 
-## System Prompt de OMNIA
+## Cambios a Realizar
 
-El edge function enviara un system prompt como:
+### Archivo 1: `src/components/command/views/OverviewView.tsx`
+- Renombrar todos los textos tecnicos a espanol simple:
+  - "Executive Snapshot" -> "Resumen del Dia"
+  - "SLA Atencion" -> "Tiempo de Respuesta"
+  - "Business Pulse" -> "Tendencia de Ventas"
+  - "Performance por Sede" -> "Como van las Sedes"
+  - "Operations Intelligence" -> "Que necesita tu atencion"
+  - "Senales que requieren atencion" -> "Puntos importantes del dia"
+  - "Horas Operativas" -> "Horas Trabajadas"
+  - "Coaches sin validar" -> "Coaches por revisar"
+  - "senales detectadas" -> "cosas por revisar"
 
-> "Eres OMNIA, el asistente AI ejecutivo de Fitness Factory, una cadena de gimnasios con 4 sedes. Tienes acceso a datos en tiempo real del negocio. Responde de forma concisa, ejecutiva, con datos precisos. Usa emojis con moderacion. Datos actuales: [ventas, alertas, nomina, inventario, SLA...]"
+### Archivo 2: `src/components/command/views/VentasView.tsx`
+- Subtitulo -> "Como van las ventas en cada sede"
+- "Tendencia Semanal por Sede" -> "Ventas de la Semana"
+- "Comparativo de ventas ultimos 7 dias" -> "Comparando las 4 sedes en los ultimos 7 dias"
 
-Esto le da al AI contexto completo para responder cualquier pregunta sobre el negocio.
+### Archivo 3: `src/components/command/views/OperacionesView.tsx`
+- Aceptar prop `initialTab` para poder abrir directamente en Nomina o Compras desde el sidebar
+- "Gestion de nomina, compras e inventario" -> "Todo sobre tu equipo, compras y productos"
+- "Distribucion semanal de horas operativas" -> "Horas trabajadas esta semana por sede"
+- "Coaches que requieren validacion de horas" -> "Coaches con horas por revisar"
+- "Solicitudes Pendientes" -> "Compras por Aprobar"
+- "Compras que requieren aprobacion" -> "Estas compras necesitan tu OK"
+- "Alertas de Inventario" -> "Productos con Stock Bajo"
+- "Productos que requieren atencion" -> "Estos productos se estan acabando"
+
+### Archivo 4: `src/components/command/views/AtencionView.tsx` (NUEVO)
+- Crear vista dedicada de Atencion al Cliente con:
+  - 3 MetricCards: Mensajes Hoy (47), Tiempo Promedio (3.2 min), Respuestas Rapidas (89%)
+  - Grafico de barras de categorias de mensajes usando Recharts (datos de `atencionCliente.categorias`)
+  - Titulos user-friendly: "Atencion al Cliente", "Como estamos respondiendo"
+
+### Archivo 5: `src/pages/Index.tsx`
+- Conectar "atencion" -> `AtencionView`
+- Conectar "nomina" -> `OperacionesView` con `initialTab="nomina"`
+- Conectar "compras" -> `OperacionesView` con `initialTab="compras"`
+
+### Archivo 6: `src/components/command/CommandHeader.tsx`
+- "Command Center" -> "Centro de Control"
+
+### Archivo 7: `src/components/command/CommandSidebar.tsx`
+- "Command v2.0" -> "Centro de Control"
+- Grupo "Sistema" -> "Notificaciones"
+
+### Archivo 8: `src/components/command/AskOmnia.tsx`
+- "AI Assistant" -> "Tu Asistente"
+
+### Archivo 9: `src/components/command/AlertTimeline.tsx`
+- Revisar que los labels sean en espanol simple (sin terminos como "signal" o "detected")
+
+### Archivo 10: `src/components/command/views/AlertasView.tsx`
+- "Centro de Alertas" -> "Alertas"
+- "senales detectadas por el sistema" -> "cosas que necesitan tu atencion"
+- "Timeline de Alertas" -> "Detalle de Alertas"
+- "Ordenadas por prioridad" -> "De mas urgente a menos urgente"
+
+### Archivo 11: `src/index.css`
+- Ajustar light mode: aumentar opacidad de tarjetas, ajustar pattern-dots para que no sea cyan en fondo blanco, mejorar contraste de glows
 
 ---
 
-## Detalles Tecnicos
-
-### Edge Function (`supabase/functions/omnia/index.ts`)
-- CORS headers completos
-- System prompt con datos del negocio hardcodeados (fase 1)
-- Modelo: `google/gemini-3-flash-preview`
-- Stream: true
-- Manejo de errores 429/402 con mensajes claros
-
-### Stream Client (`src/lib/streamChat.ts`)
-- Parseo SSE linea por linea
-- Manejo de JSON parcial entre chunks
-- Flush de buffer final
-- Soporte para AbortController (cancelacion)
-
-### AskOmnia.tsx (cambios)
-- Instalar y usar `react-markdown` para renderizar respuestas
-- Streaming: actualizar contenido del ultimo mensaje assistant en cada token
-- Toast en errores de red/rate-limit
-- Mantener sugerencias iniciales pero que funcionen con AI real
-
-### Dependencia nueva
-- `react-markdown` para renderizar respuestas del AI con formato
-
----
-
-## Resultado
-
-El gerente podra escribir preguntas como:
-- "Como van las ventas hoy vs ayer?"
-- "Que sede tiene peor rendimiento?"
-- "Resume las alertas criticas"
-- "Cuantos coaches faltan por validar?"
-
-Y recibir respuestas reales del AI, con streaming, basadas en los datos del negocio.
+## Resultado Esperado
+- Todas las vistas con lenguaje 100% en espanol simple, sin jerga tecnica
+- Vista de "Atencion al Cliente" funcional con sus propios datos y graficos
+- Navegacion directa desde sidebar: Nomina y Compras abren la sub-tab correcta
+- Light mode con mejor contraste y legibilidad
+- Cada vista tiene datos relevantes y diferenciados
