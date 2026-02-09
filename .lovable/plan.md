@@ -1,129 +1,96 @@
 
+# Ask OMNIA - De Mock a AI Real con Lovable Cloud
 
-# Dashboard Fitness Factory - Rediseno Futurista y Minimalista
+## Objetivo
 
-## Vision General
-
-Transformar el dashboard actual en una experiencia visual moderna, espaciosa y con navegacion por pestanas que elimine la densidad de informacion en una sola vista.
-
----
-
-## Cambios de Diseno
-
-### 1. Sistema de Navegacion por Vistas
-
-Implementar un sistema de tabs/pestanas para separar el contenido en vistas distintas:
-
-```text
-+------------------------------------------------------------------+
-|  [Resumen]  [Ventas]  [Operaciones]  [Alertas]                   |
-+------------------------------------------------------------------+
-```
-
-- **Resumen**: KPIs principales con metricas circulares animadas
-- **Ventas**: Detalles de ventas por sede y graficos
-- **Operaciones**: Nomina, compras e inventario
-- **Alertas**: Centro de notificaciones con timeline
-
-### 2. Estetica Futurista
-
-- Fondos con gradientes suaves y glassmorphism (blur + transparencia)
-- Cards con bordes sutiles y sombras difusas
-- Indicadores circulares animados para KPIs
-- Espaciado generoso (mucho aire entre elementos)
-- Tipografia grande y legible
-- Animaciones de entrada suaves
-
-### 3. Paleta de Colores Actualizada
-
-Mantener los colores de marca pero con acabado mas sofisticado:
-- Fondo principal mas oscuro/neutro
-- Acentos de color mas vibrantes en elementos interactivos
-- Uso de transparencias y blurs
+Convertir el panel "Ask OMNIA" de respuestas simuladas a un asistente AI real que conoce los datos del negocio de Fitness Factory, usando streaming token-by-token.
 
 ---
 
-## Estructura de Componentes
-
-### Vista Resumen (Default)
+## Arquitectura
 
 ```text
-+------------------------------------------------------------------+
-|  LOGO                          DASHBOARD EJECUTIVO       [fecha] |
-+------------------------------------------------------------------+
-|                                                                   |
-|   +-------------+  +-------------+  +-------------+  +---------+  |
-|   |             |  |             |  |             |  |         |  |
-|   |   VENTAS    |  |   NOMINA    |  |    SLA      |  | ALERTAS |  |
-|   |   $4,850    |  |   $2,840    |  |    89%      |  |    3    |  |
-|   |   [ring]    |  |   [ring]    |  |   [ring]    |  | [ring]  |  |
-|   |   +12.3%    |  |   312h      |  |   3.2min    |  | activas |  |
-|   +-------------+  +-------------+  +-------------+  +---------+  |
-|                                                                   |
-|   +---------------------------+  +----------------------------+   |
-|   |   MINI GRAFICO VENTAS    |  |   TOP 3 ALERTAS RAPIDAS    |   |
-|   |   (sparkline semanal)    |  |   - Alerta 1               |   |
-|   |                          |  |   - Alerta 2               |   |
-|   +---------------------------+  +----------------------------+   |
-|                                                                   |
-+------------------------------------------------------------------+
-|                              [POWERED BY OMNIA]                   |
-+------------------------------------------------------------------+
++------------------+       +------------------------+       +---------------------------+
+|   AskOmnia.tsx   | ----> | Edge Function: omnia   | ----> | Lovable AI Gateway        |
+|   (streaming)    | <---- | (system prompt + data) | <---- | google/gemini-3-flash     |
++------------------+       +------------------------+       +---------------------------+
 ```
 
-### Vista Ventas
+El system prompt del edge function incluira todos los datos de mockData como contexto, de modo que OMNIA "conoce" el estado actual del negocio y puede responder preguntas reales sobre ventas, alertas, sedes, nomina, etc.
 
-- Selector de sede con chips
-- Grafico de lineas grande y limpio
-- Cards comparativas por sede
+---
 
-### Vista Operaciones
+## Que se va a hacer
 
-- Sub-tabs: Nomina | Compras | Inventario
-- Listas limpias con estados visuales
-- Progress rings para horas por sede
+### 1. Habilitar Lovable Cloud
+- Activar Lovable Cloud para tener Supabase disponible (edge functions).
 
-### Vista Alertas
+### 2. Crear Edge Function `omnia`
+- Archivo: `supabase/functions/omnia/index.ts`
+- Recibe los mensajes del chat
+- Inyecta un **system prompt ejecutivo** con los datos del negocio (ventas por sede, alertas, nomina, compras, inventario)
+- Llama al Lovable AI Gateway con streaming habilitado
+- Maneja errores 429 (rate limit) y 402 (creditos)
+- Retorna el stream SSE al frontend
 
-- Timeline vertical de alertas
-- Filtros por tipo y prioridad
-- Estados visuales claros (critico/advertencia/info)
+### 3. Refactorizar AskOmnia.tsx
+- Eliminar `MOCK_RESPONSES` y el `setTimeout`
+- Implementar streaming real token-by-token
+- Renderizar respuestas con markdown (`react-markdown`)
+- Actualizar el ultimo mensaje del assistant progresivamente
+- Manejar errores y mostrar toasts
+- Mantener el historial de conversacion completo
+
+### 4. Crear utilidad de streaming
+- Archivo: `src/lib/streamChat.ts`
+- Funcion reutilizable para parsear SSE line-by-line
+- Manejo de buffer, CRLF, `[DONE]`, flush final
+- Callbacks `onDelta` y `onDone`
+
+---
+
+## System Prompt de OMNIA
+
+El edge function enviara un system prompt como:
+
+> "Eres OMNIA, el asistente AI ejecutivo de Fitness Factory, una cadena de gimnasios con 4 sedes. Tienes acceso a datos en tiempo real del negocio. Responde de forma concisa, ejecutiva, con datos precisos. Usa emojis con moderacion. Datos actuales: [ventas, alertas, nomina, inventario, SLA...]"
+
+Esto le da al AI contexto completo para responder cualquier pregunta sobre el negocio.
 
 ---
 
 ## Detalles Tecnicos
 
-### Archivos a Crear
+### Edge Function (`supabase/functions/omnia/index.ts`)
+- CORS headers completos
+- System prompt con datos del negocio hardcodeados (fase 1)
+- Modelo: `google/gemini-3-flash-preview`
+- Stream: true
+- Manejo de errores 429/402 con mensajes claros
 
-1. `src/components/dashboard/FuturisticCard.tsx` - Card con glassmorphism
-2. `src/components/dashboard/CircularProgress.tsx` - Indicador circular animado
-3. `src/components/dashboard/DashboardNav.tsx` - Navegacion por tabs
-4. `src/components/dashboard/views/ResumenView.tsx` - Vista principal
-5. `src/components/dashboard/views/VentasView.tsx` - Vista de ventas
-6. `src/components/dashboard/views/OperacionesView.tsx` - Vista operaciones
-7. `src/components/dashboard/views/AlertasView.tsx` - Vista alertas
+### Stream Client (`src/lib/streamChat.ts`)
+- Parseo SSE linea por linea
+- Manejo de JSON parcial entre chunks
+- Flush de buffer final
+- Soporte para AbortController (cancelacion)
 
-### Archivos a Modificar
+### AskOmnia.tsx (cambios)
+- Instalar y usar `react-markdown` para renderizar respuestas
+- Streaming: actualizar contenido del ultimo mensaje assistant en cada token
+- Toast en errores de red/rate-limit
+- Mantener sugerencias iniciales pero que funcionen con AI real
 
-1. `src/index.css` - Agregar utilidades glassmorphism y animaciones
-2. `src/pages/Index.tsx` - Implementar sistema de navegacion
-3. `src/components/dashboard/DashboardHeader.tsx` - Simplificar header
-4. `src/components/dashboard/PoweredByOmnia.tsx` - Estilo blueprint mejorado
-
-### Animaciones
-
-- Fade-in al cambiar de vista
-- Scale-in para cards
-- Transiciones suaves en anillos circulares
-- Hover effects sutiles
+### Dependencia nueva
+- `react-markdown` para renderizar respuestas del AI con formato
 
 ---
 
-## Beneficios del Rediseno
+## Resultado
 
-1. **Menos densidad**: Cada vista muestra solo lo relevante
-2. **Navegacion clara**: Tabs permiten encontrar informacion rapido
-3. **Estetica premium**: Look moderno y profesional
-4. **Mejor UX**: Espacio para respirar, jerarquia visual clara
-5. **Escalabilidad**: Facil agregar nuevas vistas en el futuro
+El gerente podra escribir preguntas como:
+- "Como van las ventas hoy vs ayer?"
+- "Que sede tiene peor rendimiento?"
+- "Resume las alertas criticas"
+- "Cuantos coaches faltan por validar?"
 
+Y recibir respuestas reales del AI, con streaming, basadas en los datos del negocio.
