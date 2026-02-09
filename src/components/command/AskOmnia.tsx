@@ -102,7 +102,7 @@ export function AskOmnia({ expanded = false, onToggleExpand }: AskOmniaProps) {
           </div>
           <div>
             <span className="text-sm font-bold text-foreground tracking-tight">Ask OMNIA</span>
-            <span className="text-[10px] text-primary/60 ml-2 font-medium">AI Assistant</span>
+            <span className="text-[10px] text-primary/60 ml-2 font-medium">Tu Asistente</span>
           </div>
         </div>
         {onToggleExpand && (

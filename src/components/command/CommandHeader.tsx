@@ -21,7 +21,7 @@ export function CommandHeader() {
         <div className="h-6 w-px bg-border/50" />
         <div>
           <h1 className="text-base font-bold text-foreground tracking-tight">
-            Command Center
+            Centro de Control
           </h1>
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
             <Calendar className="h-3 w-3 text-primary/60" />

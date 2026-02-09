@@ -34,8 +34,8 @@ export function AlertasView() {
             <Shield className="h-3.5 w-3.5 text-destructive" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-foreground tracking-tight">Centro de Alertas</h2>
-            <p className="text-[11px] text-muted-foreground/60">{allAlerts.length} señales detectadas por el sistema</p>
+            <h2 className="text-lg font-bold text-foreground tracking-tight">Alertas</h2>
+            <p className="text-[11px] text-muted-foreground/60">{allAlerts.length} cosas que necesitan tu atención</p>
           </div>
         </div>
 
@@ -105,8 +105,8 @@ export function AlertasView() {
       {/* Alert Timeline */}
       <CommandCard scanline>
         <CommandCardHeader 
-          title="Timeline de Alertas"
-          subtitle="Ordenadas por prioridad"
+          title="Detalle de Alertas"
+          subtitle="De más urgente a menos urgente"
           icon={<AlertTriangle className="h-4 w-4 text-primary" />}
         />
         <CommandCardContent>
