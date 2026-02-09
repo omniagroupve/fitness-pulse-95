@@ -26,7 +26,7 @@ export function VentasView() {
           </div>
           <div>
             <h2 className="text-lg font-bold text-foreground tracking-tight">Ventas</h2>
-            <p className="text-[11px] text-muted-foreground/60">Análisis detallado de ingresos por sede</p>
+            <p className="text-[11px] text-muted-foreground/60">Cómo van las ventas en cada sede</p>
           </div>
         </div>
 
@@ -86,8 +86,8 @@ export function VentasView() {
       {/* Chart */}
       <CommandCard scanline>
         <CommandCardHeader
-          title="Tendencia Semanal por Sede"
-          subtitle="Comparativo de ventas últimos 7 días"
+          title="Ventas de la Semana"
+          subtitle="Comparando las 4 sedes en los últimos 7 días"
           icon={<TrendingUp className="h-4 w-4 text-primary" />}
         />
         <CommandCardContent>

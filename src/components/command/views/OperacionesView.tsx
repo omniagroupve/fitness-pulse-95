@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { 
   Settings2, 
@@ -17,8 +17,16 @@ import { asistenciaNomina, comprasInventario } from '@/lib/mockData';
 
 type SubView = 'nomina' | 'compras' | 'inventario';
 
-export function OperacionesView() {
-  const [subView, setSubView] = useState<SubView>('nomina');
+interface OperacionesViewProps {
+  initialTab?: SubView;
+}
+
+export function OperacionesView({ initialTab = 'nomina' }: OperacionesViewProps) {
+  const [subView, setSubView] = useState<SubView>(initialTab);
+
+  useEffect(() => {
+    setSubView(initialTab);
+  }, [initialTab]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -30,7 +38,7 @@ export function OperacionesView() {
           </div>
           <div>
             <h2 className="text-lg font-bold text-foreground tracking-tight">Operaciones</h2>
-            <p className="text-[11px] text-muted-foreground/60">Gestión de nómina, compras e inventario</p>
+            <p className="text-[11px] text-muted-foreground/60">Todo sobre tu equipo, compras y productos</p>
           </div>
         </div>
 
@@ -100,7 +108,7 @@ function NominaContent() {
       <CommandCard scanline>
         <CommandCardHeader 
           title="Horas por Sede" 
-          subtitle="Distribución semanal de horas operativas"
+          subtitle="Horas trabajadas esta semana por sede"
         />
         <CommandCardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -122,8 +130,8 @@ function NominaContent() {
       {asistenciaNomina.coachesValidacionPendiente.length > 0 && (
         <CommandCard glow="warning" hudCorners>
           <CommandCardHeader 
-            title="Validaciones Pendientes" 
-            subtitle="Coaches que requieren validación de horas"
+            title="Coaches por Revisar" 
+            subtitle="Coaches con horas por revisar"
             icon={<AlertTriangle className="h-4 w-4 text-warning" />}
           />
           <CommandCardContent>
@@ -191,8 +199,8 @@ function ComprasContent() {
 
       <CommandCard scanline>
         <CommandCardHeader 
-          title="Solicitudes Pendientes" 
-          subtitle="Compras que requieren aprobación"
+            title="Compras por Aprobar" 
+            subtitle="Estas compras necesitan tu OK"
         />
         <CommandCardContent>
           <div className="space-y-2">
@@ -219,8 +227,8 @@ function InventarioContent() {
     <div className="space-y-6 animate-fade-in">
       <CommandCard glow="destructive" hudCorners>
         <CommandCardHeader 
-          title="Alertas de Inventario" 
-          subtitle="Productos que requieren atención"
+            title="Productos con Stock Bajo" 
+            subtitle="Estos productos se están acabando"
           icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
         />
         <CommandCardContent>

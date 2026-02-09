@@ -43,7 +43,7 @@ const navGroups = [
     ]
   },
   {
-    label: 'Sistema',
+    label: 'Notificaciones',
     items: [
       { id: 'alertas' as const, label: 'Alertas', icon: AlertTriangle, badge: 3 },
     ]
@@ -70,7 +70,7 @@ export function CommandSidebar({ activeView, onViewChange, collapsed = false }: 
           {!collapsed && (
             <div className="flex flex-col">
               <span className="text-xs font-bold text-primary uppercase tracking-[0.2em]">OMNIA</span>
-              <span className="text-[10px] text-muted-foreground/60 font-medium">Command v2.0</span>
+              <span className="text-[10px] text-muted-foreground/60 font-medium">Centro de Control</span>
             </div>
           )}
         </div>

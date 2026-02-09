@@ -92,22 +92,48 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --border: 210 20% 88%;
-    --input: 210 20% 88%;
+    --border: 210 20% 85%;
+    --input: 210 20% 85%;
     --ring: 185 100% 35%;
-    --sidebar-background: 210 20% 96%;
+    --sidebar-background: 210 15% 96%;
     --sidebar-foreground: 225 25% 20%;
     --sidebar-primary: 185 100% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 210 20% 92%;
     --sidebar-accent-foreground: 225 25% 10%;
-    --sidebar-border: 210 20% 90%;
+    --sidebar-border: 210 20% 88%;
     --sidebar-ring: 185 100% 35%;
     --chart-1: 185 100% 40%;
     --chart-2: 24 95% 50%;
     --chart-3: 142 71% 40%;
     --chart-4: 38 92% 50%;
     --chart-5: 270 70% 55%;
+  }
+
+  /* Light mode overrides for glassmorphism */
+  .light .glass {
+    @apply bg-card/90 border-border/60;
+  }
+  .light .glass-strong {
+    @apply bg-card/95 border-border/70;
+  }
+  .light .glass-holographic {
+    background: linear-gradient(135deg, hsl(var(--card) / 0.95) 0%, hsl(var(--card) / 0.9) 50%, hsl(var(--card) / 0.95) 100%);
+    border-color: hsl(var(--border) / 0.6);
+  }
+  .light .pattern-dots {
+    background-image: radial-gradient(circle, hsl(225 20% 70% / 0.15) 1px, transparent 1px);
+  }
+  .light .pattern-grid {
+    background-image:
+      linear-gradient(hsl(225 20% 88% / 0.6) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(225 20% 88% / 0.6) 1px, transparent 1px);
+  }
+  .light .glow-primary {
+    box-shadow: 0 2px 12px hsl(185 100% 40% / 0.1);
+  }
+  .light .glow-intense {
+    box-shadow: 0 2px 15px hsl(185 100% 40% / 0.12);
   }
 }
 

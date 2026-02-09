@@ -44,7 +44,7 @@ export function OverviewView() {
             <Zap className="h-3 w-3 text-primary" />
           </div>
           <h2 className="text-xs font-bold text-foreground uppercase tracking-[0.15em]">
-            Executive Snapshot
+            Resumen del Día
           </h2>
           <div className="flex-1 h-px bg-gradient-to-r from-border/50 to-transparent ml-3" />
         </div>
@@ -65,7 +65,7 @@ export function OverviewView() {
             icon={<Users className="h-4 w-4 text-muted-foreground" />}
           />
           <MetricCard
-            label="SLA Atención"
+            label="Tiempo de Respuesta"
             value={`${atencionCliente.respuestasMenos5Min}%`}
             status={atencionCliente.respuestasMenos5Min >= 85 ? 'success' : 'warning'}
             icon={<MessageSquare className="h-4 w-4 text-primary" />}
@@ -86,8 +86,8 @@ export function OverviewView() {
           {/* Business Pulse */}
           <CommandCard scanline>
             <CommandCardHeader 
-              title="Business Pulse"
-              subtitle="Tendencia de ventas últimos 7 días"
+              title="Tendencia de Ventas"
+              subtitle="Cómo se han movido las ventas en los últimos 7 días"
               icon={<TrendingUp className="h-4 w-4 text-primary" />}
             />
             <CommandCardContent>
@@ -102,7 +102,7 @@ export function OverviewView() {
                 <Activity className="h-3 w-3 text-secondary" />
               </div>
               <h2 className="text-xs font-bold text-foreground uppercase tracking-[0.15em]">
-                Performance por Sede
+                Cómo van las Sedes
               </h2>
               <div className="flex-1 h-px bg-gradient-to-r from-border/50 to-transparent ml-3" />
             </div>
@@ -115,8 +115,8 @@ export function OverviewView() {
           {/* Operations Intelligence */}
           <CommandCard hudCorners>
             <CommandCardHeader 
-              title="Operations Intelligence"
-              subtitle="Señales que requieren atención"
+              title="Qué necesita tu atención"
+              subtitle="Puntos importantes del día"
               icon={<Activity className="h-4 w-4 text-warning" />}
             />
             <CommandCardContent className="space-y-4">
@@ -136,7 +136,7 @@ export function OverviewView() {
                   size="sm"
                   color="primary"
                   label="Horas"
-                  sublabel="Operativas"
+                  sublabel="Trabajadas"
                 />
                 <StatusRing 
                   value={atencionCliente.respuestasMenos5Min} 
@@ -153,22 +153,24 @@ export function OverviewView() {
                 <div className="p-3 rounded-lg bg-muted/20 border border-border/30 hover:border-warning/30 transition-colors">
                   <div className="flex items-center gap-1.5 mb-1">
                     <Users className="h-3 w-3 text-warning" />
-                    <span className="text-[9px] text-muted-foreground/60 uppercase font-bold tracking-wider">Pendientes</span>
+                    <span className="text-[9px] text-muted-foreground/60 uppercase font-bold tracking-wider">Por Revisar</span>
                   </div>
                   <p className="text-lg font-bold text-foreground tabular-nums">
                     {asistenciaNomina.coachesValidacionPendiente.length}
                   </p>
-                  <p className="text-[10px] text-muted-foreground/50">Coaches sin validar</p>
+                  <p className="text-[10px] text-muted-foreground/50">Coaches por revisar</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/20 border border-border/30 hover:border-warning/30 transition-colors">
                   <div className="flex items-center gap-1.5 mb-1">
                     <ShoppingCart className="h-3 w-3 text-warning" />
-                    <span className="text-[9px] text-muted-foreground/60 uppercase font-bold tracking-wider">Compras</span>
+                  <span className="text-[9px] text-muted-foreground/60 uppercase font-bold tracking-wider">Compras</span>
+
                   </div>
                   <p className="text-lg font-bold text-foreground tabular-nums">
                     {comprasInventario.comprasPendientes}
                   </p>
                   <p className="text-[10px] text-muted-foreground/50">Por aprobar</p>
+
                 </div>
               </div>
             </CommandCardContent>
@@ -178,7 +180,7 @@ export function OverviewView() {
           <CommandCard glow={alertas.criticas.length > 0 ? 'destructive' : 'none'}>
             <CommandCardHeader 
               title="Alertas Activas"
-              subtitle={`${allAlerts.length} señales detectadas`}
+              subtitle={`${allAlerts.length} cosas por revisar`}
               icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
             />
             <CommandCardContent>
