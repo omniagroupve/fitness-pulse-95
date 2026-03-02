@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, Zap } from 'lucide-react';
+import { useData } from '@/contexts/DataContext';
 
 interface SedeData {
   sede: string;
@@ -9,11 +10,28 @@ interface SedeData {
 }
 
 interface SedeGridProps {
-  sedes: SedeData[];
+  sedes: SedeData[]; // kept for backwards compatibility/fallback
   className?: string;
 }
 
-export function SedeGrid({ sedes, className }: SedeGridProps) {
+export function SedeGrid({ sedes: fallbackSedes, className }: SedeGridProps) {
+  const { data } = useData();
+  const hasVentasData = data.ventas.length > 0;
+
+  const sedesVentasMap: Record<string, number> = {};
+  if (hasVentasData) {
+    data.ventas.forEach(v => {
+      sedesVentasMap[v.Sede] = (sedesVentasMap[v.Sede] || 0) + v.Monto;
+    });
+  }
+
+  const sedes = hasVentasData
+    ? Object.entries(sedesVentasMap).map(([sede, ventas]) => ({
+      sede,
+      ventas,
+      variacion: 0 // Waiting for historical data to calculate this accurately
+    }))
+    : fallbackSedes;
   const getStatus = (variacion: number): 'ok' | 'warning' | 'critical' => {
     if (variacion >= 5) return 'ok';
     if (variacion >= 0) return 'warning';

@@ -2,6 +2,7 @@ import { MessageSquare, Clock, CheckCircle, Zap } from 'lucide-react';
 import { CommandCard, CommandCardHeader, CommandCardContent } from '../CommandCard';
 import { MetricCard } from '../MetricCard';
 import { atencionCliente } from '@/lib/mockData';
+import { useData } from '@/contexts/DataContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const COLORS = [
@@ -13,6 +14,32 @@ const COLORS = [
 ];
 
 export function AtencionView() {
+  const { data } = useData();
+  const hasAtencionData = data.operacionesAtencion.length > 0;
+
+  const totalMensajes = hasAtencionData
+    ? data.operacionesAtencion.length
+    : atencionCliente.mensajesHoy;
+
+  const totalTiempoRespuestas = hasAtencionData
+    ? data.operacionesAtencion.reduce((sum, item) => sum + item.Tiempo_Respuesta_Minutos, 0)
+    : 0;
+
+  const tiempoPromedio = hasAtencionData
+    ? (totalMensajes > 0 ? Math.round(totalTiempoRespuestas / totalMensajes) : 0)
+    : atencionCliente.slaPromedio;
+
+  const ticketsMenos5Min = hasAtencionData
+    ? data.operacionesAtencion.filter(t => t.Tiempo_Respuesta_Minutos <= 5).length
+    : 0;
+
+  const porcentajeRapidas = hasAtencionData
+    ? (totalMensajes > 0 ? Math.round((ticketsMenos5Min / totalMensajes) * 100) : 0)
+    : atencionCliente.respuestasMenos5Min;
+
+  // Categories fallback since we didn't add the Categories sheet yet to match the mock
+  const categoriasData = atencionCliente.categorias;
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -30,22 +57,22 @@ export function AtencionView() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <MetricCard
           label="Mensajes Hoy"
-          value={`${atencionCliente.mensajesHoy}`}
+          value={`${totalMensajes}`}
           status="neutral"
           icon={<MessageSquare className="h-4 w-4 text-primary" />}
         />
         <MetricCard
           label="Tiempo Promedio"
-          value={`${atencionCliente.slaPromedio} min`}
-          status={atencionCliente.slaPromedio <= 5 ? 'success' : 'warning'}
+          value={`${tiempoPromedio} min`}
+          status={tiempoPromedio <= 5 ? 'success' : 'warning'}
           icon={<Clock className="h-4 w-4 text-warning" />}
         />
         <MetricCard
           label="Respuestas Rápidas"
-          value={`${atencionCliente.respuestasMenos5Min}%`}
-          status={atencionCliente.respuestasMenos5Min >= 85 ? 'success' : 'warning'}
+          value={`${porcentajeRapidas}%`}
+          status={porcentajeRapidas >= 85 ? 'success' : 'warning'}
           icon={<CheckCircle className="h-4 w-4 text-success" />}
-          change={atencionCliente.respuestasMenos5Min >= 85 ? 4.2 : -2.1}
+          change={porcentajeRapidas >= 85 ? 4.2 : -2.1}
           changeLabel="vs semana pasada"
         />
       </div>
@@ -53,14 +80,14 @@ export function AtencionView() {
       {/* Categories Chart */}
       <CommandCard scanline>
         <CommandCardHeader
-          title="¿Sobre qué nos escriben?"
+          title="¿Sobre qué nos escriben? (Demo)"
           subtitle="Categorías de mensajes de hoy"
           icon={<Zap className="h-4 w-4 text-primary" />}
         />
         <CommandCardContent>
           <div className="h-[300px] w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={atencionCliente.categorias} layout="vertical" margin={{ left: 20, right: 20 }}>
+              <BarChart data={categoriasData} layout="vertical" margin={{ left: 20, right: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(225, 20%, 16%)" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11, fill: 'hsl(215, 20%, 55%)' }} axisLine={false} tickLine={false} />
                 <YAxis dataKey="categoria" type="category" tick={{ fontSize: 12, fill: 'hsl(210, 40%, 96%)' }} axisLine={false} tickLine={false} width={90} />
@@ -74,7 +101,7 @@ export function AtencionView() {
                   formatter={(value: number) => [`${value} mensajes`, '']}
                 />
                 <Bar dataKey="cantidad" radius={[0, 6, 6, 0]} barSize={28}>
-                  {atencionCliente.categorias.map((_, index) => (
+                  {categoriasData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} fillOpacity={0.85} />
                   ))}
                 </Bar>
@@ -98,7 +125,7 @@ export function AtencionView() {
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-success tabular-nums">{atencionCliente.respuestasMenos5Min}%</span>
+              <span className="text-3xl font-bold text-success tabular-nums">{porcentajeRapidas}%</span>
               <span className="text-xs text-success font-semibold">✓ Cumpliendo</span>
             </div>
           </CommandCardContent>
@@ -116,8 +143,8 @@ export function AtencionView() {
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-foreground tabular-nums">{atencionCliente.categorias[0].categoria}</span>
-              <span className="text-xs text-muted-foreground font-semibold">{atencionCliente.categorias[0].cantidad} mensajes</span>
+              <span className="text-3xl font-bold text-foreground tabular-nums">{categoriasData[0].categoria}</span>
+              <span className="text-xs text-muted-foreground font-semibold">{categoriasData[0].cantidad} mensajes</span>
             </div>
           </CommandCardContent>
         </CommandCard>

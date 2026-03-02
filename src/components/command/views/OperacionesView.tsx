@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { 
-  Settings2, 
-  Users, 
-  ShoppingCart, 
+import {
+  Settings2,
+  Users,
+  ShoppingCart,
   Package,
   Clock,
   CheckCircle,
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { CommandCard, CommandCardHeader, CommandCardContent } from '../CommandCard';
 import { StatusRing } from '../StatusRing';
+import { useData } from '@/contexts/DataContext';
 import { asistenciaNomina, comprasInventario } from '@/lib/mockData';
 
 type SubView = 'nomina' | 'compras' | 'inventario';
@@ -77,11 +78,44 @@ export function OperacionesView({ initialTab = 'nomina' }: OperacionesViewProps)
 }
 
 function NominaContent() {
+  const { data } = useData();
+  const hasNominaData = data.nomina.length > 0;
+
+  const totalHorasSemana = hasNominaData
+    ? data.nomina.reduce((sum, n) => sum + n.Horas_Trabajadas, 0)
+    : asistenciaNomina.horasPorSede.reduce((s, h) => s + h.horas, 0);
+
+  const totalCostoSemana = hasNominaData
+    ? data.nomina.reduce((sum, n) => sum + n.Costo, 0)
+    : asistenciaNomina.costoTotalSemanal;
+
+  // Group by sede
+  const horasPorSedeMap: Record<string, { horas: number, coaches: Set<string> }> = {};
+  if (hasNominaData) {
+    data.nomina.forEach(n => {
+      if (!horasPorSedeMap[n.Sede]) horasPorSedeMap[n.Sede] = { horas: 0, coaches: new Set() };
+      horasPorSedeMap[n.Sede].horas += n.Horas_Trabajadas;
+      horasPorSedeMap[n.Sede].coaches.add(n.Rol); // Using Rol as proxy for individual coach in this data shape
+    });
+  }
+
+  const horasSedeArray = hasNominaData
+    ? Object.entries(horasPorSedeMap).map(([sede, info]) => ({
+      sede,
+      horas: info.horas,
+      coaches: info.coaches.size
+    }))
+    : asistenciaNomina.horasPorSede;
+
+  const totalCoaches = hasNominaData
+    ? horasSedeArray.reduce((sum, s) => sum + s.coaches, 0)
+    : asistenciaNomina.horasPorSede.reduce((s, h) => s + h.coaches, 0);
+
   const stats = [
-    { label: 'Horas Semana', value: `${asistenciaNomina.horasPorSede.reduce((s, h) => s + h.horas, 0)}h`, icon: Clock, color: 'text-primary', bg: 'bg-primary/10 border-primary/20' },
-    { label: 'Coaches Activos', value: asistenciaNomina.horasPorSede.reduce((s, h) => s + h.coaches, 0), icon: Users, color: 'text-secondary', bg: 'bg-secondary/10 border-secondary/20' },
+    { label: 'Horas Semana', value: `${totalHorasSemana} h`, icon: Clock, color: 'text-primary', bg: 'bg-primary/10 border-primary/20' },
+    { label: 'Roles Activos', value: totalCoaches, icon: Users, color: 'text-secondary', bg: 'bg-secondary/10 border-secondary/20' },
     { label: 'Pendientes', value: asistenciaNomina.coachesValidacionPendiente.length, icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/10 border-warning/20' },
-    { label: 'Costo Semanal', value: `$${asistenciaNomina.costoTotalSemanal.toLocaleString()}`, icon: CheckCircle, color: 'text-success', bg: 'bg-success/10 border-success/20' },
+    { label: 'Costo Semanal', value: `$${totalCostoSemana.toLocaleString()} `, icon: CheckCircle, color: 'text-success', bg: 'bg-success/10 border-success/20' },
   ];
 
   return (
@@ -90,7 +124,7 @@ function NominaContent() {
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <CommandCard key={stat.label} className="p-4 animate-scale-in" style={{ animationDelay: `${i * 0.05}s`, opacity: 0 } as React.CSSProperties}>
+            <CommandCard key={stat.label} className="p-4 animate-scale-in" style={{ animationDelay: `${i * 0.05} s`, opacity: 0 } as React.CSSProperties}>
               <div className="flex items-center gap-3">
                 <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center border", stat.bg)}>
                   <Icon className={cn("h-4.5 w-4.5", stat.color)} />
@@ -106,31 +140,31 @@ function NominaContent() {
       </div>
 
       <CommandCard scanline>
-        <CommandCardHeader 
-          title="Horas por Sede" 
+        <CommandCardHeader
+          title="Horas por Sede"
           subtitle="Horas trabajadas esta semana por sede"
         />
         <CommandCardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {asistenciaNomina.horasPorSede.map(sede => (
+            {horasSedeArray.map(sede => (
               <StatusRing
                 key={sede.sede}
                 value={sede.horas}
-                max={120}
+                max={Math.max(120, sede.horas)} // dynamic max
                 size="md"
                 color="primary"
                 label={sede.sede}
-                sublabel={`${sede.coaches} coaches`}
+                sublabel={`${sede.coaches} roles`}
               />
             ))}
           </div>
         </CommandCardContent>
       </CommandCard>
 
-      {asistenciaNomina.coachesValidacionPendiente.length > 0 && (
+      {!hasNominaData && asistenciaNomina.coachesValidacionPendiente.length > 0 && (
         <CommandCard glow="warning" hudCorners>
-          <CommandCardHeader 
-            title="Coaches por Revisar" 
+          <CommandCardHeader
+            title="Coaches por Revisar (Demo)"
             subtitle="Coaches con horas por revisar"
             icon={<AlertTriangle className="h-4 w-4 text-warning" />}
           />
@@ -198,9 +232,9 @@ function ComprasContent() {
       </div>
 
       <CommandCard scanline>
-        <CommandCardHeader 
-            title="Compras por Aprobar" 
-            subtitle="Estas compras necesitan tu OK"
+        <CommandCardHeader
+          title="Compras por Aprobar"
+          subtitle="Estas compras necesitan tu OK"
         />
         <CommandCardContent>
           <div className="space-y-2">
@@ -226,20 +260,20 @@ function InventarioContent() {
   return (
     <div className="space-y-6 animate-fade-in">
       <CommandCard glow="destructive" hudCorners>
-        <CommandCardHeader 
-            title="Productos con Stock Bajo" 
-            subtitle="Estos productos se están acabando"
+        <CommandCardHeader
+          title="Productos con Stock Bajo"
+          subtitle="Estos productos se están acabando"
           icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
         />
         <CommandCardContent>
           <div className="space-y-2">
             {comprasInventario.alertasInventario.map((alerta, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className={cn(
                   "flex items-center justify-between p-4 rounded-lg border transition-colors",
-                  alerta.nivel === 'crítico' 
-                    ? "bg-destructive/5 border-destructive/20 hover:border-destructive/40" 
+                  alerta.nivel === 'crítico'
+                    ? "bg-destructive/5 border-destructive/20 hover:border-destructive/40"
                     : "bg-warning/5 border-warning/20 hover:border-warning/40"
                 )}
               >
@@ -256,8 +290,8 @@ function InventarioContent() {
                 </div>
                 <span className={cn(
                   "px-2.5 py-1 text-[9px] font-bold rounded-lg uppercase tracking-wider",
-                  alerta.nivel === 'crítico' 
-                    ? "bg-destructive/10 text-destructive border border-destructive/20" 
+                  alerta.nivel === 'crítico'
+                    ? "bg-destructive/10 text-destructive border border-destructive/20"
                     : "bg-warning/10 text-warning border border-warning/20"
                 )}>
                   {alerta.nivel}

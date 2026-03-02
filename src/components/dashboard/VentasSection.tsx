@@ -1,20 +1,41 @@
 import { TrendingUp, TrendingDown, Trophy } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
-  Legend 
+  Legend
 } from 'recharts';
 import { ventasPorSede, ventasDiarias } from '@/lib/mockData';
+import { useData } from '@/contexts/DataContext';
 
 export function VentasSection() {
-  const topSede = ventasPorSede.reduce((prev, current) => 
+  const { data } = useData();
+
+  // Process excel data if available
+  const hasVentasData = data.ventas.length > 0;
+
+  const sedesVentasMap: Record<string, number> = {};
+  if (hasVentasData) {
+    data.ventas.forEach(v => {
+      sedesVentasMap[v.Sede] = (sedesVentasMap[v.Sede] || 0) + v.Monto;
+    });
+  }
+
+  const processedVentasPorSede = hasVentasData
+    ? Object.entries(sedesVentasMap).map(([sede, ventas]) => ({
+      sede,
+      ventas,
+      variacion: 0 // Variations would require a historical comparion not yet in the sheet logic
+    }))
+    : ventasPorSede;
+
+  const topSede = processedVentasPorSede.reduce((prev, current) =>
     prev.ventas > current.ventas ? prev : current
   );
 
@@ -32,13 +53,13 @@ export function VentasSection() {
 
       {/* Ventas por sede cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {ventasPorSede.map((sede) => {
-          const isPositive = sede.variacion > 0;
+        {processedVentasPorSede.map((sede) => {
+          const isPositive = sede.variacion >= 0;
           const isTop = sede.sede === topSede.sede;
-          
+
           return (
-            <Card 
-              key={sede.sede} 
+            <Card
+              key={sede.sede}
               className={`relative ${isTop ? 'ring-2 ring-warning/50' : ''}`}
             >
               {isTop && (
@@ -51,10 +72,12 @@ export function VentasSection() {
                 <p className="text-xl font-bold text-foreground mt-1">
                   ${sede.ventas.toLocaleString()}
                 </p>
-                <div className={`flex items-center gap-1 mt-2 text-sm ${isPositive ? 'text-success' : 'text-destructive'}`}>
-                  {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                  <span>{isPositive ? '+' : ''}{sede.variacion}%</span>
-                </div>
+                {!hasVentasData && (
+                  <div className={`flex items-center gap-1 mt-2 text-sm ${isPositive ? 'text-success' : 'text-destructive'}`}>
+                    {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                    <span>{isPositive ? '+' : ''}{sede.variacion}%</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
           );
@@ -71,18 +94,18 @@ export function VentasSection() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={ventasDiarias} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis 
-                  dataKey="dia" 
-                  tick={{ fontSize: 12 }} 
+                <XAxis
+                  dataKey="dia"
+                  tick={{ fontSize: 12 }}
                   className="text-muted-foreground"
                 />
-                <YAxis 
-                  tick={{ fontSize: 12 }} 
+                <YAxis
+                  tick={{ fontSize: 12 }}
                   tickFormatter={(value) => `$${value}`}
                   className="text-muted-foreground"
                 />
-                <Tooltip 
-                  contentStyle={{ 
+                <Tooltip
+                  contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px'
@@ -90,34 +113,34 @@ export function VentasSection() {
                   formatter={(value: number) => [`$${value}`, '']}
                 />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="Galpón" 
-                  stroke="hsl(var(--primary))" 
+                <Line
+                  type="monotone"
+                  dataKey="Galpón"
+                  stroke="hsl(var(--primary))"
                   strokeWidth={2}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="Casita" 
-                  stroke="hsl(var(--secondary))" 
+                <Line
+                  type="monotone"
+                  dataKey="Casita"
+                  stroke="hsl(var(--secondary))"
                   strokeWidth={2}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="Cabudare" 
-                  stroke="hsl(var(--chart-3))" 
+                <Line
+                  type="monotone"
+                  dataKey="Cabudare"
+                  stroke="hsl(var(--chart-3))"
                   strokeWidth={2}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="Caracas Oeste" 
-                  stroke="hsl(var(--warning))" 
+                <Line
+                  type="monotone"
+                  dataKey="Caracas Oeste"
+                  stroke="hsl(var(--warning))"
                   strokeWidth={2}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
