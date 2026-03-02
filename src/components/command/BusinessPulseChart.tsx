@@ -5,12 +5,18 @@ interface BusinessPulseChartProps {
   className?: string;
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: { color: string; value: number }[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (!active || !payload) return null;
   return (
     <div className="rounded-lg border border-border/60 bg-card/95 backdrop-blur-xl px-3 py-2 shadow-xl shadow-black/20">
       <p className="text-xs font-semibold text-foreground mb-1">{label}</p>
-      {payload.map((entry: any, i: number) => (
+      {payload.map((entry: { color: string; value: number }, i: number) => (
         <p key={i} className="text-[11px] text-muted-foreground">
           <span style={{ color: entry.color }} className="font-semibold">${entry.value.toLocaleString()}</span>
         </p>
@@ -31,12 +37,12 @@ export function BusinessPulseChart({ className }: BusinessPulseChartProps) {
         <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
           <defs>
             <linearGradient id="gradientPrimary" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(185, 100%, 50%)" stopOpacity={0.25}/>
-              <stop offset="100%" stopColor="hsl(185, 100%, 50%)" stopOpacity={0}/>
+              <stop offset="0%" stopColor="hsl(185, 100%, 50%)" stopOpacity={0.25} />
+              <stop offset="100%" stopColor="hsl(185, 100%, 50%)" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <XAxis 
-            dataKey="name" 
+          <XAxis
+            dataKey="name"
             axisLine={false}
             tickLine={false}
             tick={{ fill: 'hsl(215, 20%, 45%)', fontSize: 10, fontWeight: 500 }}
@@ -71,13 +77,13 @@ export function SedeComparisonChart({ className }: { className?: string }) {
     <div className={className}>
       <ResponsiveContainer width="100%" height={250}>
         <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-          <XAxis 
-            dataKey="name" 
+          <XAxis
+            dataKey="name"
             axisLine={false}
             tickLine={false}
             tick={{ fill: 'hsl(215, 20%, 45%)', fontSize: 10, fontWeight: 500 }}
           />
-          <YAxis 
+          <YAxis
             axisLine={false}
             tickLine={false}
             tick={{ fill: 'hsl(215, 20%, 45%)', fontSize: 10 }}
@@ -90,7 +96,7 @@ export function SedeComparisonChart({ className }: { className?: string }) {
           <Line type="monotone" dataKey="Caracas Oeste" stroke="hsl(270, 70%, 60%)" strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
-      
+
       {/* Legend */}
       <div className="flex items-center justify-center gap-5 mt-3">
         {[

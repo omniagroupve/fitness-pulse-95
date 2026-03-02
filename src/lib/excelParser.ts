@@ -26,34 +26,34 @@ export interface AppData {
 }
 
 // Data Sentinel: Validates the shape of the data
-const validateVentas = (data: any[]): VentaData[] => {
+const validateVentas = (data: Record<string, unknown>[]): VentaData[] => {
   return data
-    .filter((row: any) => row.Sede && row.Monto != null)
-    .map((row: any) => ({
+    .filter((row) => row.Sede && row.Monto != null)
+    .map((row) => ({
       ...row,
       Monto: Number(row.Monto) || 0,
-    })) as VentaData[];
+    })) as unknown as VentaData[];
 };
 
-const validateNomina = (data: any[]): NominaData[] => {
+const validateNomina = (data: Record<string, unknown>[]): NominaData[] => {
   return data
-    .filter((row: any) => row.Sede && row.Costo != null)
-    .map((row: any) => ({
+    .filter((row) => row.Sede && row.Costo != null)
+    .map((row) => ({
       ...row,
       Horas_Trabajadas: Number(row.Horas_Trabajadas) || 0,
       Costo: Number(row.Costo) || 0,
-    })) as NominaData[];
+    })) as unknown as NominaData[];
 };
 
 const validateOperacionesAtencion = (
-  data: any[]
+  data: Record<string, unknown>[]
 ): OperacionesAtencionData[] => {
   return data
-    .filter((row: any) => row.Ticket_ID && row.Tiempo_Respuesta_Minutos != null)
-    .map((row: any) => ({
+    .filter((row) => row.Ticket_ID && row.Tiempo_Respuesta_Minutos != null)
+    .map((row) => ({
       ...row,
       Tiempo_Respuesta_Minutos: Number(row.Tiempo_Respuesta_Minutos) || 0,
-    })) as OperacionesAtencionData[];
+    })) as unknown as OperacionesAtencionData[];
 };
 
 export const parseExcelFile = async (file: File): Promise<AppData> => {
@@ -87,21 +87,21 @@ export const parseExcelFile = async (file: File): Promise<AppData> => {
         );
 
         if (ventasSheetName) {
-          const rawVentas = utils.sheet_to_json(
+          const rawVentas = utils.sheet_to_json<Record<string, unknown>>(
             workbook.Sheets[ventasSheetName]
           );
           result.ventas = validateVentas(rawVentas);
         }
 
         if (nominaSheetName) {
-          const rawNomina = utils.sheet_to_json(
+          const rawNomina = utils.sheet_to_json<Record<string, unknown>>(
             workbook.Sheets[nominaSheetName]
           );
           result.nomina = validateNomina(rawNomina);
         }
 
         if (operacionesSheetName) {
-          const rawOperaciones = utils.sheet_to_json(
+          const rawOperaciones = utils.sheet_to_json<Record<string, unknown>>(
             workbook.Sheets[operacionesSheetName]
           );
           result.operacionesAtencion = validateOperacionesAtencion(
